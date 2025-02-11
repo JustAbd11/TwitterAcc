@@ -1,12 +1,10 @@
 <?php
 header('Content-Type: text/html; charset=UTF-8');
 
-// جزء معالجة الطلبات PHP
 if(isset($_GET['username'])) {
     $username = trim($_GET['username']);
-    $bearerToken = 'AAAAAAAAAAAAAAAAAAAAAE0gzAEAAAAApEW9wxUgkEQefjHlRkBj5PT4VJs%3DDC2ubJRUxV0lEAkCH0D7p1Dc1DbVaQXZrlxLC1l4N9d3wpaARv'; // استبدل بالتوكن الحقيقي
+    $bearerToken = 'AAAAAAAAAAAAAAAAAAAAAE0gzAEAAAAApEW9wxUgkEQefjHlRkBj5PT4VJs%3DDC2ubJRUxV0lEAkCH0D7p1Dc1DbVaQXZrlxLC1l4N9d3wpaARv'; // تأكد من استبدال هذا
     
-    // وظيفة جلب البيانات من تويتر
     function getTwitterData($url, $token) {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
@@ -15,6 +13,11 @@ if(isset($_GET['username'])) {
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
+        
+        if($httpCode !== 200) {
+            throw new Exception('فشل في جلب البيانات من تويتر');
+        }
+        
         return json_decode($response, true);
     }
 
@@ -22,22 +25,23 @@ if(isset($_GET['username'])) {
         $userData = getTwitterData("https://api.twitter.com/2/users/by/username/$username?user.fields=created_at,description,location,public_metrics,verified", $bearerToken);
         
         if(isset($userData['errors'])) {
-            $error = $userData['errors'][0]['detail'];
-            echo "<div class='error'>⚠️ $error</div>";
-            exit;
+            throw new Exception($userData['errors'][0]['detail']);
+        }
+
+        if(!isset($userData['data'])) {
+            throw new Exception('الحساب غير موجود');
         }
 
         $output = [
-            'name' => $userData['data']['name'],
-            'username' => $userData['data']['username'],
+            'name' => htmlspecialchars($userData['data']['name']),
+            'username' => htmlspecialchars($userData['data']['username']),
             'created_at' => date('d/m/Y', strtotime($userData['data']['created_at'])),
-            'location' => $userData['data']['location'] ?? "غير محدد",
-            'description' => $userData['data']['description'] ?? "لا يوجد وصف",
+            'location' => isset($userData['data']['location']) ? htmlspecialchars($userData['data']['location']) : "غير محدد",
+            'description' => isset($userData['data']['description']) ? htmlspecialchars($userData['data']['description']) : "لا يوجد وصف",
             'followers_count' => number_format($userData['data']['public_metrics']['followers_count']),
             'verified' => $userData['data']['verified'] ? 'نعم' : 'لا'
         ];
 
-        // عرض النتائج
         echo <<<HTML
         <div class="user-card">
             <h2>{$output['name']}</h2>
@@ -51,11 +55,10 @@ if(isset($_GET['username'])) {
             <div class="bio">{$output['description']}</div>
         </div>
 HTML;
-        exit;
         
     } catch(Exception $e) {
         echo "<div class='error'>❗ {$e->getMessage()}</div>";
-        exit;
     }
+    exit();
 }
 ?>
