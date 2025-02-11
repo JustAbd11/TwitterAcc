@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>معلومات حساب تويتر</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #f0f2f5;
+            direction: rtl;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+
+        h1 {
+            color: #1da1f2;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .search-box {
+            margin-bottom: 25px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #1da1f2;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        button {
+            background: #1da1f2;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #1991db;
+        }
+
+        .user-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 25px;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .user-info p {
+            margin: 15px 0;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .user-info span {
+            color: #1da1f2;
+            font-weight: bold;
+        }
+
+        .bio {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .error {
+            background: #ffe3e3;
+            color: #dc3545;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>باحث تويتر 🕵️♂️</h1>
+        
+        <div class="search-box">
+            <div class="input-group">
+                <input type="text" id="username" placeholder="أدخل اسم المستخدم هنا...">
+                <button onclick="getUserInfo()">عرض المعلومات</button>
+            </div>
+        </div>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+    async function getUserInfo() {
+        const username = document.getElementById('username').value;
+        const resultDiv = document.getElementById('result');
+        resultDiv.innerHTML = `<div class='loading'>جاري البحث عن الحساب...</div>`;
+
+        try {
+            const response = await fetch(`index.php?username=${encodeURIComponent(username)}`);
+            const html = await response.text();
+            resultDiv.innerHTML = html;
+        } catch(error) {
+            resultDiv.innerHTML = `<div class="error">❗ حدث خطأ في الاتصال</div>`;
+        }
+    }
+    </script>
+</body>
+</html>
